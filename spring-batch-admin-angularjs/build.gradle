@@ -1,4 +1,8 @@
 buildscript {
+  ext {
+        springBootVersion = '1.2.5.RELEASE'
+        springBatchAdminVersion = '2.0.0.BUILD-SNAPSHOT'
+    }
     repositories {
         maven {
             mavenCentral()
@@ -6,7 +10,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.2.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.5.RELEASE")
     }
 }
 
@@ -15,12 +19,10 @@ ext {
 }
 
 apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
 apply plugin: 'spring-boot'
 
 jar {
-    baseName = 'spring-batch-admin-angularjs'
+    baseName = 'spring-batch-admin'
     version =  '0.1.0'
 }
 
@@ -32,16 +34,57 @@ repositories {
 }
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-web")
-    compile("org.springframework.boot:spring-boot-starter-actuator")
+    compile("org.springframework.boot:spring-boot-starter-aop")
     compile("org.springframework.boot:spring-boot-starter-batch")
+    compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.boot:spring-boot-starter-logging") 
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    compile("org.springframework.boot:spring-boot-starter-data-jpa")
     compile("org.springframework.batch:spring-batch-core:3.0.4.RELEASE")
     compile("org.springframework.batch:spring-batch-admin-manager:$springBatchAdminVersion") {
 		exclude group: 'org.slf4j', module:'slf4j-log4j12'
 	}
-    testCompile("junit:junit")
+	 compile('org.springframework.batch:spring-batch-admin-resources:2.0.0.BUILD-SNAPSHOT') {
+         exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+         exclude group: 'org.springframework', module: 'spring-context-support'
+    }
+   
+    compile("org.projectlombok:lombok:1.16.4")
+    compile("com.google.guava:guava:18.0")
+    
+    compile ("com.jayway.awaitility:awaitility:1.6.3")
+    
+    runtime("mysql:mysql-connector-java")
+    
+    testCompile("org.springframework.boot:spring-boot-starter-test")  
+    testCompile('junit:junit:4.12')
+    testCompile('org.easytesting:fest-assert:1.4')
+    testCompile 'org.assertj:assertj-core:3.1.0'
+      
+    
 }
 
+
+task listJars << {
+    configurations.compile.each { File file -> println file.name }
+}
+    configurations {
+        all {
+           resolutionStrategy.eachDependency {
+              DependencyResolveDetails details ->
+                  if (details.requested.group == 'org.springframework') {
+                            details.useVersion '4.1.7.RELEASE'
+                     }
+            }
+            exclude group: "commons-logging"
+            exclude module: "slf4j-log4j12"
+            exclude module: "hibernate-jpa-2.0-api"
+        }
+    }
+    
+println "Using Spring Boot version: [$springBootVersion]"
+println "Using Java version: [" + System.getProperty("java.version") + "]"
+
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.3'
+
 }
